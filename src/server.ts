@@ -9,10 +9,25 @@ config();
 
 const app = express(); 
 
-// Configure CORS to allow requests from frontend
+// Configure CORS to allow requests from production frontend and previews
+const allowedOrigins = [
+  'https://editco-media-frontend.vercel.app', // production
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+];
+const vercelPreviewRegex = /\.vercel\.app$/; // allow preview deployments
+
 app.use(cors({
-  origin: ['https://editco-media-frontend.vercel.app/'],
-  credentials: true
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // server-to-server or curl
+    if (allowedOrigins.includes(origin) || vercelPreviewRegex.test(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
 }));
 app.use(express.json());
 
