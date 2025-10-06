@@ -11,7 +11,7 @@ const app = express();
 
 // Configure CORS to allow requests from frontend
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'],
+  origin: ['https://editco-media-frontend.vercel.app/'],
   credentials: true
 }));
 app.use(express.json());
