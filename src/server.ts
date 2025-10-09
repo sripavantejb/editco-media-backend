@@ -40,8 +40,6 @@ const corsOptions: cors.CorsOptions = {
 };
 
 app.use(cors(corsOptions));
-// Explicitly enable preflight across all routes
-app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Add a simple test route
