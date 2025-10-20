@@ -4,6 +4,7 @@ import { config } from 'dotenv';
 import { connectDB } from './config/db.js';
 import connectRoutes from './routes/connect.route.js';
 import adminRoutes from './routes/admin.route.js';
+import userRoutes from './routes/user.route.js';
 config();
 const app = express();
 // Configure CORS to allow requests from production frontend and previews
@@ -44,6 +45,7 @@ app.get('/api/test', (req, res) => {
 // Register routes
 app.use('/api/connect', connectRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/users', userRoutes);
 const PORT = process.env.PORT || 3000;
 const URI = process.env.MONGO_URI;
 if (!URI) {
