@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { adminLogin, getAllSubmissions, getSubmissionById, updateSubmissionStatus, deleteSubmission } from "../controllers/admin.controller.js";
+import { adminLogin, getAllSubmissions, getSubmissionById, updateSubmissionStatus, deleteSubmission, getAllUsers, getLoginHistory } from "../controllers/admin.controller.js";
 const router = Router();
 // Admin login route
 router.post('/login', adminLogin);
@@ -11,5 +11,9 @@ router.get('/submissions/:id', getSubmissionById);
 router.put('/submissions/:id/status', updateSubmissionStatus);
 // Delete submission
 router.delete('/submissions/:id', deleteSubmission);
+// Get all users
+router.get('/users', getAllUsers);
+// Get login history (all users or specific user with ?userId=xxx)
+router.get('/login-history', getLoginHistory);
 export default router;
 //# sourceMappingURL=admin.route.js.map

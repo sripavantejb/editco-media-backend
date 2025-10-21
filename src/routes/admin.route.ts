@@ -4,7 +4,9 @@ import {
   getAllSubmissions, 
   getSubmissionById, 
   updateSubmissionStatus, 
-  deleteSubmission 
+  deleteSubmission,
+  getAllUsers,
+  getLoginHistory
 } from "../controllers/admin.controller.js";
 
 const router = Router();
@@ -23,5 +25,11 @@ router.put('/submissions/:id/status', updateSubmissionStatus);
 
 // Delete submission
 router.delete('/submissions/:id', deleteSubmission);
+
+// Get all users
+router.get('/users', getAllUsers);
+
+// Get login history (all users or specific user with ?userId=xxx)
+router.get('/login-history', getLoginHistory);
 
 export default router;

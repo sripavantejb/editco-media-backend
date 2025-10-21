@@ -39,7 +39,19 @@ const userSchema = new Schema({
     companyName: {
         type: String,
         trim: true
-    }
+    },
+    loginHistory: [{
+            timestamp: {
+                type: Date,
+                default: Date.now
+            },
+            ipAddress: {
+                type: String
+            },
+            userAgent: {
+                type: String
+            }
+        }]
 }, {
     timestamps: true
 });

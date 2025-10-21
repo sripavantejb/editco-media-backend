@@ -96,6 +96,14 @@ export const loginUser = async (req, res) => {
                 error: 'Invalid credentials'
             });
         }
+        // Record login history
+        const loginEntry = {
+            timestamp: new Date(),
+            ipAddress: req.ip || req.headers['x-forwarded-for'] || 'unknown',
+            userAgent: req.headers['user-agent'] || 'unknown'
+        };
+        user.loginHistory.push(loginEntry);
+        await user.save();
         // Return success with user data (don't send password back)
         res.json({
             success: true,

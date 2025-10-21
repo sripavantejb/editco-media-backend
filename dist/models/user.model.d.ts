@@ -1,4 +1,9 @@
 import mongoose, { Document } from 'mongoose';
+export interface ILoginHistory {
+    timestamp: Date;
+    ipAddress?: string;
+    userAgent?: string;
+}
 export interface IUser extends Document {
     username: string;
     email: string;
@@ -7,6 +12,7 @@ export interface IUser extends Document {
     lastName: string;
     phoneNumber?: string;
     companyName?: string;
+    loginHistory: ILoginHistory[];
     createdAt: Date;
     updatedAt: Date;
 }

@@ -1,5 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+// Interface for Login History
+export interface ILoginHistory {
+  timestamp: Date;
+  ipAddress?: string;
+  userAgent?: string;
+}
+
 // Interface for User document
 export interface IUser extends Document {
   username: string;
@@ -9,6 +16,7 @@ export interface IUser extends Document {
   lastName: string;
   phoneNumber?: string;
   companyName?: string;
+  loginHistory: ILoginHistory[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -54,7 +62,19 @@ const userSchema = new Schema<IUser>(
     companyName: {
       type: String,
       trim: true
-    }
+    },
+    loginHistory: [{
+      timestamp: {
+        type: Date,
+        default: Date.now
+      },
+      ipAddress: {
+        type: String
+      },
+      userAgent: {
+        type: String
+      }
+    }]
   },
   {
     timestamps: true
