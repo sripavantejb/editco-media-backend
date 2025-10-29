@@ -18,6 +18,9 @@ const allowedOrigins = [
 const vercelPreviewRegex = /\.vercel\.app$/; // allow preview deployments
 // Allow custom domains (root and www) for the production site
 const customDomainRegexes = [
+    // Primary production domain (.com)
+    /^https?:\/\/(www\.)?editcomedia\.com$/,
+    // Legacy/alt domains (.studio)
     /^https?:\/\/(www\.)?editcomedia\.studio$/, // without hyphen
     /^https?:\/\/(www\.)?editco-media\.studio$/ // with hyphen (defensive)
 ];
