@@ -40,6 +40,20 @@ const userSchema = new Schema({
         type: String,
         trim: true
     },
+    avatar: {
+        type: String,
+        trim: true
+    },
+    authProvider: {
+        type: String,
+        enum: ['credentials', 'google'],
+        default: 'credentials'
+    },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
     loginHistory: [{
             timestamp: {
                 type: Date,

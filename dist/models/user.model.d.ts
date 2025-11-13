@@ -12,6 +12,9 @@ export interface IUser extends Document {
     lastName: string;
     phoneNumber?: string;
     companyName?: string;
+    avatar?: string;
+    authProvider: 'credentials' | 'google';
+    googleId?: string;
     loginHistory: ILoginHistory[];
     createdAt: Date;
     updatedAt: Date;

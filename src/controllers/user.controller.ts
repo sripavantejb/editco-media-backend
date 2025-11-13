@@ -271,7 +271,7 @@ export const googleLogin = async (req: Request, res: Response) => {
     let user = await User.findOne({ email: emailAddress });
 
     if (!user) {
-      const baseUsername = emailAddress.split('@')[0];
+      const [baseUsername = emailAddress] = emailAddress.split('@');
       const username = await generateUniqueUsername(baseUsername);
       const randomPassword = crypto.randomBytes(32).toString('hex');
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
