@@ -16,6 +16,9 @@ export interface IUser extends Document {
   lastName: string;
   phoneNumber?: string;
   companyName?: string;
+  avatar?: string;
+  authProvider: 'credentials' | 'google';
+  googleId?: string;
   loginHistory: ILoginHistory[];
   createdAt: Date;
   updatedAt: Date;
@@ -62,6 +65,20 @@ const userSchema = new Schema<IUser>(
     companyName: {
       type: String,
       trim: true
+    },
+    avatar: {
+      type: String,
+      trim: true
+    },
+    authProvider: {
+      type: String,
+      enum: ['credentials', 'google'],
+      default: 'credentials'
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true
     },
     loginHistory: [{
       timestamp: {

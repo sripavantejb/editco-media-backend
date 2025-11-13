@@ -1,6 +1,8 @@
 import type { Request, Response } from "express";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
 
 // User Registration
 export const registerUser = async (req: Request, res: Response) => {
@@ -47,7 +49,8 @@ export const registerUser = async (req: Request, res: Response) => {
       firstName,
       lastName,
       phoneNumber,
-      companyName
+      companyName,
+      authProvider: 'credentials'
     });
 
     await newUser.save();
@@ -132,7 +135,9 @@ export const loginUser = async (req: Request, res: Response) => {
         firstName: user.firstName,
         lastName: user.lastName,
         phoneNumber: user.phoneNumber,
-        companyName: user.companyName
+        companyName: user.companyName,
+        avatar: user.avatar,
+        authProvider: user.authProvider
       }
     });
   } catch (error: any) {
@@ -203,6 +208,124 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       success: false, 
       error: 'Failed to update profile', 
       details: error.message 
+    });
+  }
+};
+
+const getOAuthClient = () => {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId) {
+    throw new Error('GOOGLE_CLIENT_ID is not configured');
+  }
+  return new OAuth2Client(clientId);
+};
+
+const generateUniqueUsername = async (base: string) => {
+  const sanitizedBase = base.toLowerCase().replace(/[^a-z0-9._-]/g, '') || 'user';
+  let username = sanitizedBase;
+  let suffix = 1;
+  while (await User.exists({ username })) {
+    username = `${sanitizedBase}${suffix}`;
+    suffix += 1;
+  }
+  return username;
+};
+
+export const googleLogin = async (req: Request, res: Response) => {
+  try {
+    const { accessToken } = req.body;
+
+    if (!accessToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Google access token is required'
+      });
+    }
+
+    const client = getOAuthClient();
+    const tokenInfo = await client.getTokenInfo(accessToken);
+
+    if (!tokenInfo.email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Unable to retrieve email from Google'
+      });
+    }
+
+    client.setCredentials({ access_token: accessToken });
+    const userInfoResponse = await client.request<{ email?: string; given_name?: string; family_name?: string; picture?: string; sub?: string; name?: string }>({
+      url: 'https://www.googleapis.com/oauth2/v3/userinfo'
+    });
+    const profile = userInfoResponse.data;
+
+    const email = profile.email ?? tokenInfo.email;
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Unable to retrieve email from Google profile'
+      });
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      const baseUsername = email.split('@')[0];
+      const username = await generateUniqueUsername(baseUsername);
+      const randomPassword = crypto.randomBytes(32).toString('hex');
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+      user = new User({
+        username,
+        email,
+        password: hashedPassword,
+        firstName: profile.given_name || profile.name?.split(' ')[0] || 'Google',
+        lastName: profile.family_name || profile.name?.split(' ').slice(1).join(' ') || 'User',
+        avatar: profile.picture,
+        authProvider: 'google',
+        googleId: profile.sub
+      });
+    } else {
+      if (!user.authProvider || user.authProvider === 'credentials') {
+        user.authProvider = 'google';
+      }
+      if (!user.googleId && profile.sub) {
+        user.googleId = profile.sub;
+      }
+      if (profile.picture && user.avatar !== profile.picture) {
+        user.avatar = profile.picture;
+      }
+    }
+
+    const loginEntry = {
+      timestamp: new Date(),
+      ipAddress: req.ip || (req.headers['x-forwarded-for'] as string) || 'unknown',
+      userAgent: req.headers['user-agent'] || 'unknown'
+    };
+
+    user.loginHistory.push(loginEntry);
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Google login successful',
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
+        companyName: user.companyName,
+        avatar: user.avatar,
+        authProvider: user.authProvider
+      }
+    });
+  } catch (error: any) {
+    console.error('Google login error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Google login failed',
+      details: error.message
     });
   }
 };
