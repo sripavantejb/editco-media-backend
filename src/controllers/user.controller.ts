@@ -266,17 +266,19 @@ export const googleLogin = async (req: Request, res: Response) => {
       });
     }
 
-    let user = await User.findOne({ email });
+    const emailAddress = email as string;
+
+    let user = await User.findOne({ email: emailAddress });
 
     if (!user) {
-      const baseUsername = email.split('@')[0];
+      const baseUsername = emailAddress.split('@')[0];
       const username = await generateUniqueUsername(baseUsername);
       const randomPassword = crypto.randomBytes(32).toString('hex');
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
       user = new User({
         username,
-        email,
+        email: emailAddress,
         password: hashedPassword,
         firstName: profile.given_name || profile.name?.split(' ')[0] || 'Google',
         lastName: profile.family_name || profile.name?.split(' ').slice(1).join(' ') || 'User',
